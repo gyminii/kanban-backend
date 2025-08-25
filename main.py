@@ -1,44 +1,65 @@
 # 
 # https://www.freecodecamp.org/news/how-to-setup-virtual-environments-in-python/
 # run command: uvicorn main:app --reload
-import strawberry
 
+import strawberry
 from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
-from pymongo import MongoClient
 from strawberry.fastapi import GraphQLRouter
+from contextlib import asynccontextmanager
 
 
-@strawberry.type
-class Query:
-    @strawberry.field
-    def hello() -> str:
-        return "Hello, World!"
+from schema import schema
+from config import config
+from services.mongodb_database import MongoDatabaseService
 
-schema = strawberry.Schema(query=Query)
+db_service = MongoDatabaseService()
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await db_service.connect()
+    print("Connected to MongoDB")
+    yield
+    # Shutdown
+    await db_service.disconnect()
+    print("Disconnected from MongoDB")
+    
 # FastAPI app
-app = FastAPI()
-graphql_app = GraphQLRouter(schema)
-# Add GraphQL route
-app.include_router(graphql_app, prefix="/graphql")
+app = FastAPI(
+    title="Kanban Board API", 
+    debug=config.DEBUG,
+    lifespan=lifespan
+)
 
-
-@app.get('/')
-
-def read_root():
-    return{ "message": 'Welcome'}
-# Enable CORS for Next.js frontend
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=config.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Create GraphQL router
+graphql_app = GraphQLRouter(schema)
+
+# Add GraphQL route
+app.include_router(graphql_app, prefix="/graphql")
+
+@app.get('/')
+def read_root():
+    return {"message": "Kanban API is running"}
+
+@app.get('/health')
+def health_check():
+    return {"status": "healthy", "service": "kanban-api"}
 
 if __name__ == "__main__":
-    # Run the server
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(
+        "main:app", 
+        host=config.HOST, 
+        port=config.PORT, 
+        reload=config.DEBUG
+    )
