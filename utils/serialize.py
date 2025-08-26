@@ -13,6 +13,8 @@ def to_card_type(doc: Dict[str, Any]) -> Card:
         assigned_to=doc.get("assigned_to"),
         created_at=doc.get("created_at"),
         updated_at=doc.get("updated_at"),
+        due_date=doc.get("due_date"),       
+        completed=bool(doc.get("completed", False)),
     )
 
 def to_column_type(doc: Dict[str, Any], include_cards: bool = True) -> Column:

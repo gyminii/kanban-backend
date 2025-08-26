@@ -16,7 +16,7 @@ class BoardModel:
 
     @staticmethod
     def create(title: str, owner_id: str) -> Dict[str, Any]:
-        now = datetime.utcnow()
+        now = datetime.now()
         doc = {"title": title, "owner_id": owner_id, "members": [], "created_at": now, "updated_at": now}
         boards_col.insert_one(doc)
         return doc
@@ -24,7 +24,7 @@ class BoardModel:
     @staticmethod
     def add_member(board_id: str, member_user_id: str) -> Dict[str, Any]:
         boards_col.update_one({"_id": ObjectId(board_id)},
-                              {"$addToSet": {"members": member_user_id}, "$set": {"updated_at": datetime.utcnow()}})
+                              {"$addToSet": {"members": member_user_id}, "$set": {"updated_at": datetime.now()}})
         return boards_col.find_one({"_id": ObjectId(board_id)})
 
     @staticmethod

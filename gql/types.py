@@ -13,6 +13,8 @@ class Card:
     assigned_to: Optional[str]
     created_at: datetime
     updated_at: datetime
+    due_date: Optional[datetime]   
+    completed: bool    
     
 # Sprint each week
 @strawberry.type

@@ -5,7 +5,6 @@ from starlette.responses import JSONResponse
 from starlette.responses import RedirectResponse
 from strawberry.asgi import GraphQL
 from gql.schema import schema
-from utils.auth import get_user_id_from_request  # uses local JWT or remote Supabase
 
 graphql_app = GraphQL(schema, debug=True)
 

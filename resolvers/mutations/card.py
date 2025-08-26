@@ -2,43 +2,77 @@
 import strawberry
 from typing import Optional
 from strawberry.types import Info
+from datetime import datetime
 
 from models import BoardModel, ColumnModel, CardModel
 from utils.serialize import to_card_type
-from utils.auth import require_user
 from utils.dnd import clamp, remove_gap_in_column, make_space_in_column, reorder_within_column
-from gql.types import Card  # <-- import
+from gql.types import Card
+
 
 @strawberry.type
 class CardMutation:
     @strawberry.mutation
     def add_card(
-        self, info: Info,
+        self,
+        info: Info,
         column_id: strawberry.ID,
         title: str,
         description: Optional[str] = None,
-        assigned_to: Optional[str] = None
+        assigned_to: Optional[str] = None,
+        due_date: Optional[datetime] = None,
+        completed: Optional[bool] = False,
     ) -> Card:
-        user_id = require_user(info)
         col = ColumnModel.by_id(str(column_id))
         if not col:
             raise Exception("Column not found")
-        b = BoardModel.by_id(str(col["board_id"]))
-        if not (b["owner_id"] == user_id or user_id in b.get("members", [])):
-            raise Exception("Forbidden")
 
         order = CardModel.count_in_column(col["_id"])
-        card = CardModel.create(col["_id"], title, description, order, assigned_to)
+        card = CardModel.create(
+            col["_id"], title, description, order, assigned_to, due_date, bool(completed)
+        )
         return to_card_type(card)
 
     @strawberry.mutation
+    def update_card(
+        self,
+        info: Info,
+        card_id: strawberry.ID,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        assigned_to: Optional[str] = None,
+        due_date: Optional[datetime] = None,
+        completed: Optional[bool] = None,
+    ) -> Card:
+        c = CardModel.by_id(str(card_id))
+        if not c:
+            raise Exception("Card not found")
+
+        patch = {}
+        if title is not None:
+            patch["title"] = title
+        if description is not None:
+            patch["description"] = description
+        if assigned_to is not None:
+            patch["assigned_to"] = assigned_to
+        if due_date is not None:
+            patch["due_date"] = due_date
+        if completed is not None:
+            patch["completed"] = bool(completed)
+
+        if patch:
+            CardModel.update(c["_id"], patch)
+
+        return to_card_type(CardModel.by_id(str(c["_id"])))
+
+    @strawberry.mutation
     def move_card(
-        self, info: Info,
+        self,
+        info: Info,
         card_id: strawberry.ID,
         new_column_id: strawberry.ID,
-        new_order: int
+        new_order: int,
     ) -> Card:
-        user_id = require_user(info)
         c = CardModel.by_id(str(card_id))
         if not c:
             raise Exception("Card not found")
@@ -46,10 +80,6 @@ class CardMutation:
         from_col = ColumnModel.by_id(str(c["column_id"]))
         if not from_col:
             raise Exception("Source column not found")
-
-        b = BoardModel.by_id(str(from_col["board_id"]))
-        if not (b["owner_id"] == user_id or user_id in b.get("members", [])):
-            raise Exception("Forbidden")
 
         to_col = ColumnModel.by_id(str(new_column_id))
         if not to_col:

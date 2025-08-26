@@ -2,6 +2,7 @@
 from typing import Optional, Dict, Any, List
 from bson import ObjectId
 from db import cards_col
+from datetime import datetime
 
 class CardModel:
     @staticmethod
@@ -15,9 +16,11 @@ class CardModel:
         description: Optional[str],
         order: int,
         assigned_to: Optional[str] = None,
+        due_date: Optional[datetime] = None, 
+        completed: bool = False,  
     ) -> Dict[str, Any]:
         from datetime import datetime
-        now = datetime.utcnow()
+        now = datetime.now()
         doc = {
             "column_id": column_oid,
             "title": title,
@@ -26,6 +29,8 @@ class CardModel:
             "assigned_to": assigned_to,
             "created_at": now,
             "updated_at": now,
+            "due_date": due_date,
+            "completed": completed,
         }
         cards_col.insert_one(doc)
         return doc
@@ -40,4 +45,5 @@ class CardModel:
 
     @staticmethod
     def update(card_oid: ObjectId, data: Dict[str, Any]) -> None:
+        data["updated_at"] = datetime.now() 
         cards_col.update_one({"_id": card_oid}, {"$set": data})
