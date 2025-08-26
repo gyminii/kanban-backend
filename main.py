@@ -2,6 +2,7 @@
 from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
+from starlette.responses import RedirectResponse
 from strawberry.asgi import GraphQL
 from gql.schema import schema
 from utils.auth import get_user_id_from_request  # uses local JWT or remote Supabase
@@ -16,7 +17,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_credentials=True,
 )
-
+# Redirecting to /graphql from root.
+@app.route("/")
+async def root(_):
+    return RedirectResponse(url="/graphql")
+# Grphql playground
 app.add_route("/graphql", graphql_app)
 app.add_websocket_route("/graphql", graphql_app)
 
