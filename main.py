@@ -8,6 +8,7 @@ from gql.schema import schema
 
 graphql_app = GraphQL(schema, debug=True)
 
+# uvicorn main:app --reload --host 0.0.0.0 --port 8080
 app = Starlette()
 app.add_middleware(
     CORSMiddleware,
