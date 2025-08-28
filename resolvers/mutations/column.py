@@ -1,23 +1,41 @@
 # resolvers/mutations/column.py
 import strawberry
+from typing import Optional
+from datetime import datetime
 from strawberry.types import Info
 
 from models import BoardModel, ColumnModel
 from utils.serialize import to_column_type
 from utils.dnd import reorder_columns_within_board, clamp
-from gql.types import Column 
-
+from gql.types import Column  # real type
 
 @strawberry.type
 class ColumnMutation:
     @strawberry.mutation
-    def add_column(self, info: Info, board_id: strawberry.ID, title: str) -> Column:
+    def add_column(
+        self,
+        info: Info,
+        board_id: strawberry.ID,
+        title: str,
+        description: Optional[str] = None,
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        status: Optional[str] = None,
+    ) -> Column:
         b = BoardModel.by_id(str(board_id))
         if not b:
             raise Exception("Board not found")
 
         order = BoardModel.column_count(b["_id"])
-        col = ColumnModel.create(b["_id"], title, order)
+        col = ColumnModel.create(
+            b["_id"],
+            title=title,
+            order=order,
+            description=description,
+            start_date=start_date,
+            end_date=end_date,
+            status=status,
+        )
         return to_column_type(col, include_cards=True)
 
     @strawberry.mutation
@@ -25,8 +43,11 @@ class ColumnMutation:
         col = ColumnModel.by_id(str(column_id))
         if not col:
             raise Exception("Column not found")
+        b = BoardModel.by_id(str(col["board_id"]))
+        if not b:
+            raise Exception("Board not found")
 
-        board_oid = col["board_id"]  # already an ObjectId
+        board_oid = b["_id"]
         count = BoardModel.column_count(board_oid)
         new_order = clamp(new_order, 0, max(0, count - 1))
         old_order = int(col.get("order", 0))

@@ -1,5 +1,5 @@
 # utils/serialize.py
-from typing import Dict, Any
+from typing import Dict, Any, List
 from models import ColumnModel, CardModel
 from gql.types import Board, Column, Card  # real Strawberry types
 
@@ -13,12 +13,12 @@ def to_card_type(doc: Dict[str, Any]) -> Card:
         assigned_to=doc.get("assigned_to"),
         created_at=doc.get("created_at"),
         updated_at=doc.get("updated_at"),
-        due_date=doc.get("due_date"),       
-        completed=bool(doc.get("completed", False)),
+        due_date=doc.get("due_date"),
+        completed=doc.get("completed"),
     )
 
 def to_column_type(doc: Dict[str, Any], include_cards: bool = True) -> Column:
-    cards = []
+    cards: List[Card] = []
     if include_cards:
         cards = [to_card_type(c) for c in CardModel.list_for_column(doc["_id"])]
     return Column(
@@ -26,6 +26,12 @@ def to_column_type(doc: Dict[str, Any], include_cards: bool = True) -> Column:
         board_id=str(doc["board_id"]),
         title=doc.get("title", ""),
         order=int(doc.get("order", 0)),
+        description=doc.get("description"),
+        start_date=doc.get("start_date"),
+        end_date=doc.get("end_date"),
+        status=doc.get("status"),
+        created_at=doc.get("created_at"),
+        updated_at=doc.get("updated_at"),
         cards=cards,
     )
 
@@ -36,7 +42,14 @@ def to_board_type(doc: Dict[str, Any]) -> Board:
         title=doc.get("title", ""),
         owner_id=doc.get("owner_id"),
         members=doc.get("members", []),
+        description=doc.get("description"),
+        color=doc.get("color"),
+        is_favorite=bool(doc.get("is_favorite", False)),
+        is_archived=bool(doc.get("is_archived", False)),
+        tags=doc.get("tags", []),
         created_at=doc.get("created_at"),
         updated_at=doc.get("updated_at"),
         columns=cols,
     )
+
+__all__ = ["to_card_type", "to_column_type", "to_board_type"]
