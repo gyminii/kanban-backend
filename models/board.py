@@ -1,4 +1,3 @@
-# models/board.py
 from typing import Optional, Dict, Any, List
 from bson import ObjectId
 from datetime import datetime
@@ -59,6 +58,20 @@ class BoardModel:
         )
         return boards_col.find_one({"_id": ObjectId(board_id)})
 
+    # --- NEW: add member by email (keeps original add_member untouched) ---
+    @staticmethod
+    def add_member_email(board_id: str, member_email: str) -> Dict[str, Any]:
+        boards_col.update_one(
+            {"_id": ObjectId(board_id)},
+            {"$addToSet": {"members": member_email}, "$set": {"updated_at": datetime.utcnow()}}
+        )
+        return boards_col.find_one({"_id": ObjectId(board_id)})
+
     @staticmethod
     def column_count(board_oid: ObjectId) -> int:
         return columns_col.count_documents({"board_id": board_oid})
+
+    # --- NEW: delete board by ObjectId ---
+    @staticmethod
+    def delete(board_oid: ObjectId) -> None:
+        boards_col.delete_one({"_id": board_oid})

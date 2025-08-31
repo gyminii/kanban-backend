@@ -1,4 +1,3 @@
-# models/column.py
 from typing import Optional, Dict, Any, List
 from bson import ObjectId
 from datetime import datetime
@@ -41,7 +40,28 @@ class ColumnModel:
     @staticmethod
     def update_order(col_oid: ObjectId, new_order: int):
         columns_col.update_one({"_id": col_oid}, {"$set": {"order": new_order}})
+
     @staticmethod
     def update(col_oid: ObjectId, data: Dict[str, Any]):
         data["updated_at"] = datetime.now()
         columns_col.update_one({"_id": col_oid}, {"$set": data})
+
+    # --- NEW: delete a single column ---
+    @staticmethod
+    def delete(col_oid: ObjectId) -> None:
+        columns_col.delete_one({"_id": col_oid})
+
+    # --- NEW: bulk delete columns for a board ---
+    @staticmethod
+    def delete_for_board(board_oid: ObjectId) -> int:
+        res = columns_col.delete_many({"board_id": board_oid})
+        return getattr(res, "deleted_count", 0)
+
+    # --- NEW: compact orders after a column removal within a board ---
+    @staticmethod
+    def compact_orders(board_oid: ObjectId, removed_order: int) -> None:
+        # Decrement order for all columns with order > removed_order
+        columns_col.update_many(
+            {"board_id": board_oid, "order": {"$gt": removed_order}},
+            {"$inc": {"order": -1}}
+        )

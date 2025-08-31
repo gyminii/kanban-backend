@@ -1,10 +1,8 @@
-# resolvers/mutations/board.py
-
 import strawberry
 from typing import Optional, List
 from strawberry.types import Info
 
-from models import BoardModel
+from models import BoardModel, ColumnModel, CardModel
 from utils.serialize import to_board_type
 from gql.types import Board
 
@@ -68,8 +66,34 @@ class BoardMutation:
 
     @strawberry.mutation
     def invite_member(self, info: Info, board_id: strawberry.ID, member_user_id: str) -> Board:
+        # Keeps original behavior (ID-based) to avoid breaking existing code
         b = BoardModel.by_id(str(board_id))
         if not b:
             raise Exception("Board not found")
         updated = BoardModel.add_member(str(board_id), member_user_id)
         return to_board_type(updated)
+
+    # --- NEW: invite by email (preferred for display) ---
+    @strawberry.mutation
+    def invite_member_email(self, info: Info, board_id: strawberry.ID, member_email: str) -> Board:
+        b = BoardModel.by_id(str(board_id))
+        if not b:
+            raise Exception("Board not found")
+        updated = BoardModel.add_member_email(str(board_id), member_email)
+        return to_board_type(updated)
+
+    # --- NEW: delete board + cascade delete columns & cards ---
+    @strawberry.mutation
+    def delete_board(self, info: Info, board_id: strawberry.ID) -> bool:
+        b = BoardModel.by_id(str(board_id))
+        if not b:
+            # deleting a non-existing board is a no-op but returns False for clarity
+            return False
+
+        # Delete cards in each column, then columns, then the board
+        cols = ColumnModel.list_for_board(b["_id"])
+        for col in cols:
+            CardModel.delete_in_column(col["_id"])
+        ColumnModel.delete_for_board(b["_id"])
+        BoardModel.delete(b["_id"])
+        return True

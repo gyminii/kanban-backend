@@ -15,6 +15,7 @@ def to_card_type(doc: Dict[str, Any]) -> Card:
         updated_at=doc.get("updated_at"),
         due_date=doc.get("due_date"),
         completed=doc.get("completed"),
+        tags=doc.get("tags", []),
     )
 
 def to_column_type(doc: Dict[str, Any], include_cards: bool = True) -> Column:
@@ -50,6 +51,7 @@ def to_board_type(doc: Dict[str, Any]) -> Board:
         created_at=doc.get("created_at"),
         updated_at=doc.get("updated_at"),
         columns=cols,
+        
     )
 
 __all__ = ["to_card_type", "to_column_type", "to_board_type"]

@@ -1,4 +1,3 @@
-# models/card.py
 from typing import Optional, Dict, Any, List
 from bson import ObjectId
 from db import cards_col
@@ -18,6 +17,7 @@ class CardModel:
         assigned_to: Optional[str] = None,
         due_date: Optional[datetime] = None, 
         completed: bool = False,  
+        tags: Optional[List[str]] = None, 
     ) -> Dict[str, Any]:
         from datetime import datetime
         now = datetime.now()
@@ -31,6 +31,8 @@ class CardModel:
             "updated_at": now,
             "due_date": due_date,
             "completed": completed,
+            "archived": False, 
+            "tags": tags or [], 
         }
         cards_col.insert_one(doc)
         return doc
@@ -47,3 +49,14 @@ class CardModel:
     def update(card_oid: ObjectId, data: Dict[str, Any]) -> None:
         data["updated_at"] = datetime.now() 
         cards_col.update_one({"_id": card_oid}, {"$set": data})
+
+    # --- NEW: delete a single card ---
+    @staticmethod
+    def delete(card_oid: ObjectId) -> None:
+        cards_col.delete_one({"_id": card_oid})
+
+    # --- NEW: bulk delete all cards for a column; returns count ---
+    @staticmethod
+    def delete_in_column(col_oid: ObjectId) -> int:
+        res = cards_col.delete_many({"column_id": col_oid})
+        return getattr(res, "deleted_count", 0)

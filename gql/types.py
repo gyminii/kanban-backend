@@ -15,6 +15,8 @@ class Card:
     updated_at: datetime
     due_date: Optional[datetime] = None
     completed: Optional[bool] = None
+    archived: Optional[bool] = None
+    tags: List[str] 
 
 @strawberry.type
 class Column:

@@ -1,6 +1,5 @@
-# resolvers/mutations/card.py
 import strawberry
-from typing import Optional
+from typing import Optional, List
 from strawberry.types import Info
 from datetime import datetime
 
@@ -22,6 +21,7 @@ class CardMutation:
         assigned_to: Optional[str] = None,
         due_date: Optional[datetime] = None,
         completed: Optional[bool] = False,
+        tags: Optional[List[str]] = None, 
     ) -> Card:
         col = ColumnModel.by_id(str(column_id))
         if not col:
@@ -29,7 +29,7 @@ class CardMutation:
 
         order = CardModel.count_in_column(col["_id"])
         card = CardModel.create(
-            col["_id"], title, description, order, assigned_to, due_date, bool(completed)
+            col["_id"], title, description, order, assigned_to, due_date, bool(completed), tags or [], 
         )
         return to_card_type(card)
 
@@ -43,6 +43,8 @@ class CardMutation:
         assigned_to: Optional[str] = None,
         due_date: Optional[datetime] = None,
         completed: Optional[bool] = None,
+        archived: Optional[bool] = None, 
+        tags: Optional[List[str]] = None,
     ) -> Card:
         c = CardModel.by_id(str(card_id))
         if not c:
@@ -59,7 +61,10 @@ class CardMutation:
             patch["due_date"] = due_date
         if completed is not None:
             patch["completed"] = bool(completed)
-
+        if archived is not None: 
+            patch["archived"] = bool(archived) 
+        if tags is not None:     
+            patch["tags"] = list(tags)
         if patch:
             CardModel.update(c["_id"], patch)
 
@@ -102,3 +107,16 @@ class CardMutation:
             CardModel.update(c["_id"], {"column_id": to_col["_id"], "order": new_order})
 
         return to_card_type(CardModel.by_id(str(c["_id"])))
+
+    # --- NEW: delete a card and compact orders in its column ---
+    @strawberry.mutation
+    def delete_card(self, info: Info, card_id: strawberry.ID) -> bool:
+        c = CardModel.by_id(str(card_id))
+        if not c:
+            return False
+        col_oid = c["column_id"]
+        old_order = int(c.get("order", 0))
+        CardModel.delete(c["_id"])
+        # Close the order gap in the column for remaining cards
+        remove_gap_in_column(col_oid, old_order)
+        return True
