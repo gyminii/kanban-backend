@@ -2,12 +2,13 @@
 from typing import Dict, Any, List
 from models import ColumnModel, CardModel
 from gql.types import Board, Column, Card  # real Strawberry types
+import strawberry
 
 def to_card_type(doc: Dict[str, Any]) -> Card:
     return Card(
-        id=str(doc["_id"]),
-        board_id=str(doc["board_id"]),
-        column_id=str(doc["column_id"]),
+        id=strawberry.ID(str(doc["_id"])),
+        board_id=strawberry.ID(str(doc["board_id"])),
+        column_id=strawberry.ID(str(doc["column_id"])),
         title=doc.get("title", ""),
         description=doc.get("description"),
         order=int(doc.get("order", 0)),
@@ -24,8 +25,8 @@ def to_column_type(doc: Dict[str, Any], include_cards: bool = True) -> Column:
     if include_cards:
         cards = [to_card_type(c) for c in CardModel.list_for_column(doc["_id"])]
     return Column(
-        id=str(doc["_id"]),
-        board_id=str(doc["board_id"]),
+        id=strawberry.ID(str(doc["_id"])),
+        board_id=strawberry.ID(str(doc["board_id"])),
         title=doc.get("title", ""),
         order=int(doc.get("order", 0)),
         description=doc.get("description"),
@@ -40,9 +41,9 @@ def to_column_type(doc: Dict[str, Any], include_cards: bool = True) -> Column:
 def to_board_type(doc: Dict[str, Any]) -> Board:
     cols = [to_column_type(c, include_cards=True) for c in ColumnModel.list_for_board(doc["_id"])]
     return Board(
-        id=str(doc["_id"]),
+        id=strawberry.ID(str(doc["_id"])),
         title=doc.get("title", ""),
-        owner_id=doc.get("owner_id"),
+        owner_id=strawberry.ID(str(doc.get("owner_id"))),
         members=doc.get("members", []),
         description=doc.get("description"),
         color=doc.get("color"),

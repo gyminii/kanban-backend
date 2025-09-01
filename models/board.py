@@ -18,12 +18,12 @@ class BoardModel:
         title: str,
         owner_id: str,
         description: Optional[str] = None,
-        color: Optional[str] = None,            # e.g. "indigo", "#4f46e5"
+        color: Optional[str] = None,    
         is_favorite: bool = False,
         is_archived: bool = False,
         tags: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
-        now = datetime.utcnow()
+        now = datetime.now()
         doc: Dict[str, Any] = {
             "title": title,
             "owner_id": owner_id,
@@ -40,27 +40,27 @@ class BoardModel:
         return doc
 
     @staticmethod
-    def update_fields(board_oid: ObjectId, data: Dict[str, Any]) -> Dict[str, Any]:
+    def update_fields(board_oid: ObjectId, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         # sanitize allowed fields only
         allowed = {"title", "description", "color", "is_favorite", "is_archived", "tags"}
         clean = {k: v for k, v in data.items() if k in allowed}
         if not clean:
             return boards_col.find_one({"_id": board_oid})
-        clean["updated_at"] = datetime.utcnow()
+        clean["updated_at"] = datetime.now()
         boards_col.update_one({"_id": board_oid}, {"$set": clean})
         return boards_col.find_one({"_id": board_oid})
 
     @staticmethod
-    def add_member(board_id: str, member_user_id: str) -> Dict[str, Any]:
+    def add_member(board_id: str, member_user_id: str) -> Optional[Dict[str, Any]]:
         boards_col.update_one(
             {"_id": ObjectId(board_id)},
-            {"$addToSet": {"members": member_user_id}, "$set": {"updated_at": datetime.utcnow()}}
+            {"$addToSet": {"members": member_user_id}, "$set": {"updated_at": datetime.now()}}
         )
         return boards_col.find_one({"_id": ObjectId(board_id)})
 
     # --- NEW: add member by email (keeps original add_member untouched) ---
     @staticmethod
-    def add_member_email(board_id: str, member_email: str) -> Dict[str, Any]:
+    def add_member_email(board_id: str, member_email: str) -> Optional[Dict[str, Any]]:
         boards_col.update_one(
             {"_id": ObjectId(board_id)},
             {"$addToSet": {"members": member_email}, "$set": {"updated_at": datetime.utcnow()}}

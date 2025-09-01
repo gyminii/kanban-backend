@@ -21,13 +21,15 @@ class BoardMutation:
         is_archived: Optional[bool] = False,
         tags: Optional[List[str]] = None,
     ) -> Board:
+        favorite = is_favorite if is_favorite is not None else False
+        archived = is_archived if is_archived is not None else False
         b = BoardModel.create(
             title=title,
             owner_id=owner_id,
             description=description,
             color=color,
-            is_favorite=is_favorite,
-            is_archived=is_archived,
+            is_favorite=favorite,
+            is_archived=archived,
             tags=tags,
         )
         return to_board_type(b)

@@ -17,13 +17,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_credentials=True,
 )
+
 # Redirecting to /graphql from root.
 @app.route("/")
 async def root(_):
     return RedirectResponse(url="/graphql")
-# Grphql playground
-app.add_route("/graphql", graphql_app)
-app.add_websocket_route("/graphql", graphql_app)
+
+# Mount the GraphQL app at the /graphql path
+app.mount("/graphql", graphql_app)
 
 @app.route("/health")
 async def health(_):

@@ -77,7 +77,11 @@ class CardMutation:
         if patch:
             CardModel.update(c["_id"], patch)
 
-        return to_card_type(CardModel.by_id(str(c["_id"])))
+        card_doc = CardModel.by_id(str(c["_id"]))
+        if card_doc:
+            return to_card_type(card_doc)
+        else:
+            raise Exception(f"Failed to retrieve updated card with ID {c['_id']}.")
 
     @strawberry.mutation
     def move_card(
@@ -115,7 +119,11 @@ class CardMutation:
             make_space_in_column(to_col["_id"], new_order)
             CardModel.update(c["_id"], {"column_id": to_col["_id"], "order": new_order})
 
-        return to_card_type(CardModel.by_id(str(c["_id"])))
+        card_doc = CardModel.by_id(str(c["_id"]))
+        if card_doc:
+            return to_card_type(card_doc)
+        else:
+            raise Exception(f"Failed to move card with ID {c['_id']}.")
 
     # --- NEW: delete a card and compact orders in its column ---
     @strawberry.mutation
