@@ -7,7 +7,7 @@ from models import BoardModel, ColumnModel, CardModel
 from utils.serialize import to_card_type
 from utils.dnd import clamp, remove_gap_in_column, make_space_in_column, reorder_within_column
 from gql.types import Card
-
+from bson import ObjectId
 
 @strawberry.type
 class CardMutation:
@@ -16,6 +16,7 @@ class CardMutation:
         self,
         info: Info,
         column_id: strawberry.ID,
+        board_id: strawberry.ID,
         title: str,
         description: Optional[str] = None,
         assigned_to: Optional[str] = None,
@@ -29,7 +30,15 @@ class CardMutation:
 
         order = CardModel.count_in_column(col["_id"])
         card = CardModel.create(
-            col["_id"], title, description, order, assigned_to, due_date, bool(completed), tags or [], 
+            ObjectId(board_id),
+            col["_id"], 
+            title, 
+            description, 
+            order, 
+            assigned_to, 
+            due_date, 
+            bool(completed), 
+            tags or [],
         )
         return to_card_type(card)
 

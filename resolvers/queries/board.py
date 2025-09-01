@@ -8,7 +8,7 @@ from utils.serialize import to_board_type
 from gql.types import Board  
 
 @strawberry.type
-class Query:
+class BoardQuery:
     @strawberry.field
     def boards(self, info: Info, user_id: str) -> List[Board]:
         docs = BoardModel.list_for_user(user_id)

@@ -3,6 +3,8 @@ from bson import ObjectId
 from db import cards_col
 from datetime import datetime
 
+import db
+
 class CardModel:
     @staticmethod
     def by_id(card_id: str) -> Optional[Dict[str, Any]]:
@@ -10,6 +12,7 @@ class CardModel:
 
     @staticmethod
     def create(
+        board_oid: ObjectId,
         column_oid: ObjectId,
         title: str,
         description: Optional[str],
@@ -22,6 +25,7 @@ class CardModel:
         from datetime import datetime
         now = datetime.now()
         doc = {
+            "board_id": board_oid,
             "column_id": column_oid,
             "title": title,
             "description": description,
@@ -40,6 +44,15 @@ class CardModel:
     @staticmethod
     def list_for_column(col_oid: ObjectId) -> List[Dict[str, Any]]:
         return list(cards_col.find({"column_id": col_oid}).sort("order", 1))
+    @staticmethod
+    def list_for_user(user_id: str, board_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        query: Dict[str, Any] = {}
+        if board_id:
+            query["board_id"] = ObjectId(board_id)
+        else:
+            query = {}
+
+        return list(cards_col.find(query).sort("updated_at", -1))
 
     @staticmethod
     def count_in_column(col_oid: ObjectId) -> int:

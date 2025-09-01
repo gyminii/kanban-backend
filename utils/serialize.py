@@ -6,6 +6,7 @@ from gql.types import Board, Column, Card  # real Strawberry types
 def to_card_type(doc: Dict[str, Any]) -> Card:
     return Card(
         id=str(doc["_id"]),
+        board_id=str(doc["board_id"]),
         column_id=str(doc["column_id"]),
         title=doc.get("title", ""),
         description=doc.get("description"),

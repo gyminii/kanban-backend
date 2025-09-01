@@ -6,7 +6,9 @@ from datetime import datetime
 @strawberry.type
 class Card:
     id: strawberry.ID
+    board_id: strawberry.ID
     column_id: strawberry.ID
+    board_id: strawberry.ID  
     title: str
     description: Optional[str]
     order: int
