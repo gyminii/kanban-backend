@@ -1,5 +1,5 @@
 # Use official Python runtime as base image
-FROM python:latest 
+FROM python:3.12-slim
 
 # Set working directory in container
 WORKDIR /backend
@@ -13,8 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of your application code
 COPY . .
 
-# Expose port 8000 (your FastAPI server port)
-EXPOSE 8000
+EXPOSE 8080
 
-# Command to run your FastAPI app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Don’t hardcode 8080 — use $PORT provided by Render
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "$PORT"]
