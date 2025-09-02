@@ -1,7 +1,7 @@
 # utils/serialize.py
 from typing import Dict, Any, List
 from models import ColumnModel, CardModel
-from gql.types import Board, Column, Card  # real Strawberry types
+from gql.types import Board, Column, Card  
 import strawberry
 
 def to_card_type(doc: Dict[str, Any]) -> Card:

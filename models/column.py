@@ -16,7 +16,7 @@ class ColumnModel:
         description: Optional[str] = None,
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None,
-        status: Optional[str] = None,  # e.g. "active" | "planned" | "completed"
+        status: Optional[str] = None,
     ) -> Dict[str, Any]:
         now = datetime.now()
         doc: Dict[str, Any] = {
@@ -46,18 +46,15 @@ class ColumnModel:
         data["updated_at"] = datetime.now()
         columns_col.update_one({"_id": col_oid}, {"$set": data})
 
-    # --- NEW: delete a single column ---
     @staticmethod
     def delete(col_oid: ObjectId) -> None:
         columns_col.delete_one({"_id": col_oid})
 
-    # --- NEW: bulk delete columns for a board ---
     @staticmethod
     def delete_for_board(board_oid: ObjectId) -> int:
         res = columns_col.delete_many({"board_id": board_oid})
         return getattr(res, "deleted_count", 0)
 
-    # --- NEW: compact orders after a column removal within a board ---
     @staticmethod
     def compact_orders(board_oid: ObjectId, removed_order: int) -> None:
         # Decrement order for all columns with order > removed_order

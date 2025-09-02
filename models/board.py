@@ -41,7 +41,6 @@ class BoardModel:
 
     @staticmethod
     def update_fields(board_oid: ObjectId, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        # sanitize allowed fields only
         allowed = {"title", "description", "color", "is_favorite", "is_archived", "tags"}
         clean = {k: v for k, v in data.items() if k in allowed}
         if not clean:
@@ -63,7 +62,7 @@ class BoardModel:
     def add_member_email(board_id: str, member_email: str) -> Optional[Dict[str, Any]]:
         boards_col.update_one(
             {"_id": ObjectId(board_id)},
-            {"$addToSet": {"members": member_email}, "$set": {"updated_at": datetime.utcnow()}}
+            {"$addToSet": {"members": member_email}, "$set": {"updated_at": datetime.now()}}
         )
         return boards_col.find_one({"_id": ObjectId(board_id)})
 

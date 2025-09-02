@@ -56,7 +56,6 @@ class ColumnMutation:
 
         return to_column_type(ColumnModel.by_id(str(col["_id"])), include_cards=True)
 
-    # --- NEW: update non-order fields of a column ---
     @strawberry.mutation
     def update_column(
         self,

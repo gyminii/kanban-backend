@@ -50,7 +50,6 @@ class BoardMutation:
         if not b:
             raise Exception("Board not found")
 
-        # Build update dict dynamically in one shot
         input_data = {
             "title": title,
             "description": description,
@@ -75,7 +74,6 @@ class BoardMutation:
         updated = BoardModel.add_member(str(board_id), member_user_id)
         return to_board_type(updated)
 
-    # --- NEW: invite by email (preferred for display) ---
     @strawberry.mutation
     def invite_member_email(self, info: Info, board_id: strawberry.ID, member_email: str) -> Board:
         b = BoardModel.by_id(str(board_id))
@@ -84,15 +82,12 @@ class BoardMutation:
         updated = BoardModel.add_member_email(str(board_id), member_email)
         return to_board_type(updated)
 
-    # --- NEW: delete board + cascade delete columns & cards ---
     @strawberry.mutation
     def delete_board(self, info: Info, board_id: strawberry.ID) -> bool:
         b = BoardModel.by_id(str(board_id))
         if not b:
-            # deleting a non-existing board is a no-op but returns False for clarity
             return False
 
-        # Delete cards in each column, then columns, then the board
         cols = ColumnModel.list_for_board(b["_id"])
         for col in cols:
             CardModel.delete_in_column(col["_id"])
