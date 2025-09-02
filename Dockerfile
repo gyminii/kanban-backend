@@ -15,5 +15,4 @@ COPY . .
 
 EXPOSE 8080
 
-# Don’t hardcode 8080 — use $PORT provided by Render
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "$PORT"]
+CMD sh -c 'uvicorn main:app --host 0.0.0.0 --port $PORT'

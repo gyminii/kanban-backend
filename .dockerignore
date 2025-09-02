@@ -8,3 +8,5 @@ __pycache__/
 README.md
 .env
 .venv/
+node_modules/
+.DS_Store
