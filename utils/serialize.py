@@ -2,9 +2,12 @@
 from typing import Dict, Any, List
 from models import ColumnModel, CardModel
 from gql.types import Board, Column, Card  
+from datetime import datetime
 import strawberry
 
 def to_card_type(doc: Dict[str, Any]) -> Card:
+    created_at = doc["created_at"]
+    updated_at = doc["updated_at"] 
     return Card(
         id=strawberry.ID(str(doc["_id"])),
         board_id=strawberry.ID(str(doc["board_id"])),
@@ -13,8 +16,8 @@ def to_card_type(doc: Dict[str, Any]) -> Card:
         description=doc.get("description"),
         order=int(doc.get("order", 0)),
         assigned_to=doc.get("assigned_to"),
-        created_at=doc.get("created_at"),
-        updated_at=doc.get("updated_at"),
+        created_at=created_at,
+        updated_at=updated_at,
         due_date=doc.get("due_date"),
         completed=doc.get("completed"),
         tags=doc.get("tags", []),
@@ -24,6 +27,8 @@ def to_column_type(doc: Dict[str, Any], include_cards: bool = True) -> Column:
     cards: List[Card] = []
     if include_cards:
         cards = [to_card_type(c) for c in CardModel.list_for_column(doc["_id"])]
+    created_at = doc["created_at"]
+    updated_at = doc["updated_at"]
     return Column(
         id=strawberry.ID(str(doc["_id"])),
         board_id=strawberry.ID(str(doc["board_id"])),
@@ -33,13 +38,16 @@ def to_column_type(doc: Dict[str, Any], include_cards: bool = True) -> Column:
         start_date=doc.get("start_date"),
         end_date=doc.get("end_date"),
         status=doc.get("status"),
-        created_at=doc.get("created_at"),
-        updated_at=doc.get("updated_at"),
+        created_at=created_at,
+        updated_at=updated_at,
         cards=cards,
     )
 
 def to_board_type(doc: Dict[str, Any]) -> Board:
+    
     cols = [to_column_type(c, include_cards=True) for c in ColumnModel.list_for_board(doc["_id"])]
+    created_at = doc["created_at"] 
+    updated_at = doc["updated_at"] 
     return Board(
         id=strawberry.ID(str(doc["_id"])),
         title=doc.get("title", ""),
@@ -50,8 +58,8 @@ def to_board_type(doc: Dict[str, Any]) -> Board:
         is_favorite=bool(doc.get("is_favorite", False)),
         is_archived=bool(doc.get("is_archived", False)),
         tags=doc.get("tags", []),
-        created_at=doc.get("created_at"),
-        updated_at=doc.get("updated_at"),
+        created_at=created_at,
+        updated_at=updated_at,
         columns=cols,
         
     )

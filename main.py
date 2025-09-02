@@ -21,10 +21,10 @@ app.add_middleware(
 # Redirecting to /graphql from root.
 @app.route("/")
 async def root(_):
-    return RedirectResponse(url="/graphql")
+    return RedirectResponse(url="/graphql/")
 
 # Mount the GraphQL app at the /graphql path
-app.mount("/graphql", graphql_app)
+app.mount("/graphql/", graphql_app)
 
 @app.route("/health")
 async def health(_):

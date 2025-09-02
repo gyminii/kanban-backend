@@ -1,9 +1,9 @@
 import certifi
 
 from pymongo import MongoClient, errors
-from config import config
+from config import app_config
 
-MONGO_URI = config.DATABASE_URL
+MONGO_URI = app_config.DATABASE_URL
 if not MONGO_URI:
     raise RuntimeError("MONGO_URI env var missing")
 

@@ -53,8 +53,10 @@ class ColumnMutation:
         if new_order != old_order:
             reorder_columns_within_board(board_oid, old_order, new_order)
             ColumnModel.update_order(col["_id"], new_order)
-
-        return to_column_type(ColumnModel.by_id(str(col["_id"])), include_cards=True)
+        updated_col = ColumnModel.by_id(str(col["_id"]))
+        if not updated_col:
+            raise Exception("Failed to move column")
+        return to_column_type(updated_col   , include_cards=True)
 
     @strawberry.mutation
     def update_column(
@@ -86,9 +88,12 @@ class ColumnMutation:
         if patch:
             ColumnModel.update(col["_id"], patch)
 
-        return to_column_type(ColumnModel.by_id(str(col["_id"])), include_cards=True)
+        updated_col = ColumnModel.by_id(str(col["_id"]))
+        if not updated_col:
+            raise Exception("Failed to retrieve updated column")
+        
+        return to_column_type(updated_col   , include_cards=True)
 
-    # --- NEW: delete a column + cascade delete its cards and compact orders ---
     @strawberry.mutation
     def delete_column(self, info: Info, column_id: strawberry.ID) -> bool:
         col = ColumnModel.by_id(str(column_id))

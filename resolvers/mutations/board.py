@@ -63,27 +63,32 @@ class BoardMutation:
         data = {k: v for k, v in input_data.items() if v is not None}
 
         updated = BoardModel.update_fields(b["_id"], data)
+        if not updated:
+            raise Exception("Failed to update board")
         return to_board_type(updated)
 
     @strawberry.mutation
-    def invite_member(self, info: Info, board_id: strawberry.ID, member_user_id: str) -> Board:
-        # Keeps original behavior (ID-based) to avoid breaking existing code
+    def invite_member(self, board_id: strawberry.ID, member_user_id: str) -> Board:
         b = BoardModel.by_id(str(board_id))
         if not b:
             raise Exception("Board not found")
         updated = BoardModel.add_member(str(board_id), member_user_id)
+        if not updated:
+            raise Exception("Failed to invite member by id")
         return to_board_type(updated)
 
     @strawberry.mutation
-    def invite_member_email(self, info: Info, board_id: strawberry.ID, member_email: str) -> Board:
+    def invite_member_email(self,  board_id: strawberry.ID, member_email: str) -> Board:
         b = BoardModel.by_id(str(board_id))
         if not b:
             raise Exception("Board not found")
         updated = BoardModel.add_member_email(str(board_id), member_email)
+        if not updated:
+            raise Exception("Failed to invite member by email")
         return to_board_type(updated)
 
     @strawberry.mutation
-    def delete_board(self, info: Info, board_id: strawberry.ID) -> bool:
+    def delete_board(self,  board_id: strawberry.ID) -> bool:
         b = BoardModel.by_id(str(board_id))
         if not b:
             return False
