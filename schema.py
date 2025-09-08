@@ -27,14 +27,3 @@ schema = strawberry.Schema(
     mutation=Mutation
 )
 
-
-# import strawberry
-# from resolvers.auth_queries import AuthQueries
-
-# @strawberry.type
-# class Query(AuthQueries):
-#     """Combined query class with auth queries only"""
-#     pass
-
-# # Create minimal schema with just queries first
-# schema = strawberry.Schema(query=Query)
