@@ -1,8 +1,46 @@
+# Virtual environments
 venv/
 .venv/
+
+# Python caches
 __pycache__/
-.__pycache__/
+*/__pycache__/
+*.py[cod]
+*.$py.class
+
+# OS-specific
 .DS_Store
 DS_Store
+Thumbs.db
 
+# Environment files
 .env
+.env.*
+*/.env.*
+!.env.example
+
+# Node/Next.js
+node_modules/
+.next/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build/Packaging
+dist/
+build/
+.eggs/
+*.egg-info/
+*.egg
+*.manifest
+*.spec
+
+# IDEs / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.sublime-project
+*.sublime-workspace
