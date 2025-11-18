@@ -8,6 +8,9 @@ from gql.schema import schema
 
 graphql_app = GraphQL(schema, debug=True)
 
+#  python3 -m venv .venv
+# mac/linux: source .venv/bin/activate                         
+# windows: .venv\Scripts\Activate.ps1
 # uvicorn main:app --reload --host 0.0.0.0 --port 8080
 app = Starlette()
 app.add_middleware(
