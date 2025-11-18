@@ -1,18 +1,13 @@
-# Use official Python runtime as base image
 FROM python:3.12-slim
 
-# Set working directory in container
-WORKDIR /backend
+WORKDIR /app
 
-# Copy requirements file first (for better caching)
+# Copy requirements first for better caching
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your application code
+# Copy application code
 COPY . .
 
-EXPOSE 8080
-
-CMD sh -c 'uvicorn main:app --host 0.0.0.0 --port $PORT'
+# Render assigns PORT dynamically
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
